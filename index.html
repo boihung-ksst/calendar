@@ -98,10 +98,10 @@
     .app-container {
       max-width: 600px;
       margin: 0 auto;
-      padding: max(20px, env(safe-area-inset-top)) 16px 20px 16px;
+      padding: max(20px, env(safe-area-inset-top)) 12px 16px 12px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
 
     .glass-panel {
@@ -111,7 +111,7 @@
       border: 1px solid var(--glass-border);
       box-shadow: var(--shadow-soft), inset 0 2px 0 0 var(--glass-highlight);
       border-radius: var(--radius-lg);
-      padding: 20px;
+      padding: 16px;
     }
 
     .hidden {
@@ -416,6 +416,7 @@
       font-size: 0.85rem;
       color: var(--text-secondary);
       margin-bottom: 12px;
+      gap: 4px;
     }
 
     .weekdays-grid .weekend {
@@ -425,7 +426,7 @@
     .days-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
+      gap: 4px;
     }
 
     .day-cell {
@@ -625,6 +626,40 @@
       font-size: 1.3rem;
       font-weight: 800;
     }
+
+    /* Media query tối ưu màn hình hẹp (Oppo Find, iPhone SE) */
+    @media (max-width: 380px) {
+      .solar-num {
+        font-size: 1rem;
+      }
+
+      .lunar-num {
+        font-size: 0.65rem;
+      }
+
+      .day-cell {
+        border-radius: var(--radius-sm);
+      }
+
+      .glass-panel {
+        padding: 12px;
+      }
+
+      .app-container {
+        padding-left: 8px;
+        padding-right: 8px;
+        gap: 12px;
+      }
+
+      .bottom-nav-container {
+        width: 95%;
+        padding: 4px 8px;
+      }
+
+      .detail-solar-date {
+        font-size: 3rem;
+      }
+    }
   </style>
 </head>
 
@@ -733,8 +768,8 @@
           <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px;">Chia sẻ sự kiện</h3>
           <div class="form-group">
             <label>Nhập ID người nhận (4 số):</label>
-            <input type="number" id="input-share-uid" placeholder="Ví dụ: 1234"
-              oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);" />
+            <input type="text" inputmode="numeric" pattern="\d*" maxlength="4" id="input-share-uid"
+              placeholder="Ví dụ: 1234" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,4);" />
           </div>
           <button id="btn-send-share" class="cta-btn" style="min-height: 48px; margin-bottom: 20px;">Gửi sự kiện của
             tôi</button>
@@ -859,7 +894,7 @@
       Object.values(state.events).filter(e => e.date === dateKey).forEach(e => {
         const isOwner = (state.user && state.user.uid === e.ownerId);
         list.innerHTML += `<div class="event-card personal"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>📌 ${e.title}</h4>
-        ${isOwner ? `<button class="icon-btn small delete-btn" data-id="${e.id}" data-owner="${e.ownerId}">✕</button>` : ''}</div>${e.desc ? `<p class="event-desc">${e.desc}</p>` : ''}</div>`;
+        ${isOwner ? `<button class="icon-btn small btn-delete-ev" data-id="${e.id}" data-owner="${e.ownerId}">✕</button>` : ''}</div>${e.desc ? `<p class="event-desc">${e.desc}</p>` : ''}</div>`;
         hasEvents = true;
       });
 
@@ -948,10 +983,15 @@
       });
     }
 
-    document.getElementById('btn-send-share').onclick = async () => {
+    document.getElementById('btn-send-share').onclick = () => {
       const toId = document.getElementById('input-share-uid').value.trim();
-      if (!toId || toId === state.user.uid) return;
-      try { await update(ref(db, `invites/${toId}/${state.user.uid}`), { senderName: state.user.name, status: 'pending' }); showToast("Đã gửi lời mời!"); document.getElementById('input-share-uid').value = ''; } catch (e) { showToast("Gửi thất bại."); }
+      if (!toId || toId === state.user.uid) { showToast("ID không hợp lệ!"); return; }
+
+      showToast("Đã gửi lời mời chia sẻ!");
+      document.getElementById('input-share-uid').value = '';
+
+      // Gửi ngầm không block giao diện
+      update(ref(db, `invites/${toId}/${state.user.uid}`), { senderName: state.user.name, status: 'pending' }).catch(e => console.log(e));
     };
 
     window.acceptShare = async (sId) => { await update(ref(db, `invites/${state.user.uid}/${sId}`), { status: 'accepted' }); };
@@ -962,7 +1002,7 @@
       document.getElementById('modal-event-form').classList.add('show');
     };
 
-    document.getElementById('form-add-event').onsubmit = async (e) => {
+    document.getElementById('form-add-event').onsubmit = (e) => {
       e.preventDefault();
       if (!state.user) { showToast("Vui lòng nhập tên ở mục Tài khoản trước!"); closeModal('modal-event-form'); return; }
       const id = 'ev_' + Date.now();
@@ -973,14 +1013,16 @@
       closeModal('modal-event-form');
       const [y, m, d] = payload.date.split('-'); state.selected = { day: parseInt(d), month: parseInt(m), year: parseInt(y) }; state.viewMonth = parseInt(m); state.viewYear = parseInt(y);
       document.getElementById('form-add-event').reset();
-      renderDayTab(); renderCalendar(); showToast("Thêm thành công!");
+      renderDayTab(); renderCalendar();
+      showToast("Lưu thành công!");
 
-      try { await set(ref(db, `events/${state.user.uid}/${id}`), payload); } catch (err) { console.log(err); }
+      // Lưu ngầm lên Firebase
+      set(ref(db, `events/${state.user.uid}/${id}`), payload).catch(err => console.log(err));
     };
 
-    // Event Delegation cho nút xóa (Fix lỗi không xóa được)
-    document.getElementById('day-events-list').addEventListener('click', async (e) => {
-      const btn = e.target.closest('.delete-btn');
+    // Bắt sự kiện Xóa bằng Event Delegation để đảm bảo 100% hoạt động
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-delete-ev');
       if (btn) {
         const evId = btn.dataset.id;
         const ownerId = btn.dataset.owner;
@@ -989,9 +1031,10 @@
 
         delete state.events[evId];
         localStorage.setItem('lvn_events_v4', JSON.stringify(state.events));
-        renderDayTab(); renderCalendar(); showToast("Đã xóa.");
+        renderDayTab(); renderCalendar(); showToast("Xóa thành công!");
 
-        try { await remove(ref(db, `events/${state.user.uid}/${evId}`)); } catch (err) { }
+        // Xóa ngầm trên Firebase
+        remove(ref(db, `events/${state.user.uid}/${evId}`)).catch(err => console.log(err));
       }
     });
 
