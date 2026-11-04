@@ -8,7 +8,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Lịch Việt" />
   <meta name="application-name" content="Lịch Việt" />
-  <link rel="manifest" href="./manifest.json" />
   <title>Lịch Việt</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2374ebd5'/%3E%3Cstop offset='100%25' stop-color='%239face6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='120' fill='url(%23bg)'/%3E%3Cpath d='M128 176v208c0 26.5 21.5 48 48 48h160c26.5 0 48-21.5 48-48V176m-256 0c0-26.5 21.5-48 48-48h160c26.5 0 48 21.5 48 48m-256 0h256' stroke='%23fff' stroke-width='32' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='256' cy='320' r='48' fill='%23fff' /%3E%3C/svg%3E">
   <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2374ebd5'/%3E%3Cstop offset='100%25' stop-color='%239face6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' fill='url(%23bg)'/%3E%3Cpath d='M128 176v208c0 26.5 21.5 48 48 48h160c26.5 0 48-21.5 48-48V176m-256 0c0-26.5 21.5-48 48-48h160c26.5 0 48 21.5 48 48m-256 0h256' stroke='%23fff' stroke-width='32' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='256' cy='320' r='48' fill='%23fff' /%3E%3C/svg%3E">
@@ -167,13 +166,11 @@
     <div id="tab-calendar" class="tab-content hidden">
       <div class="glass-panel">
         <div class="calendar-nav">
-          <button id="btn-prev-month" class="icon-btn">
-            <svg viewBox="0 0 256 256" width="24" height="24"><path d="M160,208L80,128l80-80" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/></svg>
-          </button>
-          <h2 id="calendar-title">Tháng 10, 2026</h2>
-          <button id="btn-next-month" class="icon-btn">
-            <svg viewBox="0 0 256 256" width="24" height="24"><path d="M96,208l80-80-80-80" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/></svg>
-          </button>
+          <button id="btn-prev-year" class="icon-btn small">«</button>
+          <button id="btn-prev-month" class="icon-btn small">‹</button>
+          <h2 id="calendar-title" style="flex: 1; text-align: center; font-size: 1.1rem;">Tháng 10, 2026</h2>
+          <button id="btn-next-month" class="icon-btn small">›</button>
+          <button id="btn-next-year" class="icon-btn small">»</button>
         </div>
         <div class="weekdays-grid">
           <div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div class="weekend">T7</div><div class="weekend">CN</div>
@@ -186,28 +183,50 @@
     <div id="tab-account" class="tab-content hidden">
       <div class="glass-panel">
         <h2 style="margin-bottom: 16px; font-weight: 800;">Tài khoản của bạn</h2>
+        
+        <!-- Form Tạo mới hoặc Đăng nhập -->
         <div id="identity-setup">
-          <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 16px;">Vui lòng nhập tên để tạo mã ID (4 số) chia sẻ sự kiện với bạn bè.</p>
-          <div class="form-group"><input type="text" id="input-display-name" placeholder="Tên hiển thị..." /></div>
-          <button id="btn-save-name" class="cta-btn">Lưu tên & Nhận ID</button>
+          <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 16px;">Tạo tài khoản mới hoặc đăng nhập bằng Tên cũ.</p>
+          <div class="form-group"><input type="text" id="input-display-name" placeholder="Tên hiển thị (để tạo mới)..." /></div>
+          <button id="btn-save-name" class="cta-btn">Tạo mới & Nhận ID</button>
+          
+          <div style="margin: 24px 0; display:flex; align-items:center; color: var(--text-muted); font-size: 0.85rem; font-weight: bold;">
+            <hr style="flex:1; border:none; border-top:1px solid var(--glass-border);"><span style="margin:0 10px;">HOẶC</span><hr style="flex:1; border:none; border-top:1px solid var(--glass-border);">
+          </div>
+          
+          <div class="form-group"><input type="text" id="input-login-id" placeholder="Nhập tên người dùng cũ..." /></div>
+          <button id="btn-login-id" class="pill-btn" style="width: 100%; border-color: var(--accent-strong); color: var(--accent-strong); min-height: 52px; font-size: 1rem;">Đăng nhập lấy dữ liệu</button>
         </div>
+
+        <!-- Thông tin User -->
         <div id="identity-active" class="hidden">
           <div class="profile-card">
-            <h3 id="user-display-name" style="font-size: 1.5rem; color: var(--accent-strong);">Tên người dùng</h3>
+            <!-- Khu vực che User có nút con mắt -->
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;">
+              <h3 id="user-display-name" style="font-size: 1.5rem; color: var(--accent-strong);" data-name="">***</h3>
+              <button id="btn-toggle-eye" class="icon-btn small" style="background: transparent; border: none; box-shadow: none;">
+                <svg id="icon-eye" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-secondary);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg id="icon-eye-off" class="hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-secondary);"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+            
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px;">Mã chia sẻ của bạn (ID):</p>
             <div class="uid-display" id="user-uid-code">...</div>
           </div>
+          
           <div style="display: flex; gap: 12px; margin-bottom: 24px;">
             <button class="pill-btn" onclick="navigator.clipboard.writeText(document.getElementById('user-uid-code').textContent); showToast('Đã copy ID!');">Copy ID</button>
-            <button id="btn-logout" class="pill-btn" style="color: var(--holiday-color); border-color: var(--holiday-color);">Xóa TK</button>
+            <button id="btn-logout" class="pill-btn" style="color: var(--holiday-color); border-color: var(--holiday-color);">Đăng xuất</button>
           </div>
+          
           <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px;">Chia sẻ sự kiện</h3>
           <div class="form-group">
             <label>Nhập ID người nhận (4 số):</label>
             <input type="text" inputmode="numeric" pattern="\d*" maxlength="4" id="input-share-uid" placeholder="Ví dụ: 1234" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,4);" />
           </div>
           <button id="btn-send-share" class="cta-btn" style="min-height: 48px; margin-bottom: 20px;">Gửi sự kiện của tôi</button>
-          <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px;">Lời mời nhận được</h3>
+          
+          <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px;">Lời mời (Gửi & Nhận)</h3>
           <div id="share-invites-list" class="events-list"></div>
         </div>
       </div>
@@ -226,6 +245,18 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><circle cx="128" cy="96" r="64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="20"/><path d="M31,216a112,112,0,0,1,194,0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="20"/></svg>
     </button>
   </nav>
+
+  <!-- MODAL XÁC NHẬN CHUNG -->
+  <div id="modal-confirm" class="modal-backdrop">
+    <div class="glass-sheet">
+      <div class="sheet-header"><h3 id="confirm-title" style="color: var(--holiday-color);">Xác nhận</h3><button type="button" class="icon-btn small close-modal">✕</button></div>
+      <p id="confirm-msg" style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 8px;">Bạn có chắc chắn không?</p>
+      <div style="display: flex; gap: 12px; margin-top: 10px;">
+        <button type="button" class="pill-btn close-modal" onclick="document.getElementById('modal-confirm').classList.remove('show');">Không</button>
+        <button type="button" id="btn-confirm-ok" class="cta-btn" style="background: var(--holiday-color); box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35);">Đồng ý</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL THÊM SỰ KIỆN -->
   <div id="modal-event-form" class="modal-backdrop">
@@ -273,10 +304,17 @@
       selected: { day: new Date().getDate(), month: new Date().getMonth() + 1, year: new Date().getFullYear() },
       events: JSON.parse(localStorage.getItem('lvn_events_v5')) || {},
       user: JSON.parse(localStorage.getItem('lvn_user_v5')) || null,
-      sharedEvents: {}, invitesIn: {}
+      sharedEvents: {}, invitesIn: {}, invitesOut: {}
     };
 
     function showToast(msg) { const t = document.getElementById('toast-msg'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+    let currentConfirmCb = null;
+    function showConfirm(title, msg, cb) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-msg').textContent = msg;
+      currentConfirmCb = cb;
+      document.getElementById('modal-confirm').classList.add('show');
+    }
     function switchTab(tabId) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.querySelector(`[data-tab="${tabId}"]`).classList.add('active'); document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(tabId).classList.remove('hidden'); }
     
     document.querySelectorAll('.nav-item').forEach(btn => {
@@ -286,7 +324,6 @@
       });
     });
     
-    // An toàn hơn khi gắn event close modal
     const closeModal = (id) => {
       const el = document.getElementById(id);
       if(el) el.classList.remove('show');
@@ -320,7 +357,8 @@
         hasEvents = true;
       });
 
-      Object.values(state.sharedEvents).forEach(fb => {
+      Object.entries(state.sharedEvents).forEach(([senderAuthId, fb]) => {
+        if (!state.invitesIn[senderAuthId] || state.invitesIn[senderAuthId].status !== 'accepted') return;
         Object.values(fb.events || {}).filter(e => e.date === dateKey).forEach(e => {
           list.innerHTML += `<div class="event-card shared"><h4>🤝 ${e.title}</h4><p class="event-meta">Từ: ${fb.name}</p></div>`;
           hasEvents = true;
@@ -346,7 +384,7 @@
         if (isO && i >= so + dim && (i%7===0)) break;
         const lunar = solarToLunar(d, m, y), dk = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`, hasH = HOLIDAYS[`${d}/${m}`] || HOLIDAYS[`lunar_${lunar.day}/${lunar.month}`];
         const hasP = Object.values(state.events).some(e => e.date === dk);
-        let hasS = false; Object.values(state.sharedEvents).forEach(b => { if(Object.values(b.events||{}).some(e => e.date === dk)) hasS = true; });
+        let hasS = false; Object.entries(state.sharedEvents).forEach(([sId, b]) => { if(state.invitesIn[sId] && state.invitesIn[sId].status === 'accepted' && Object.values(b.events||{}).some(e => e.date === dk)) hasS = true; });
         const cell = document.createElement('div');
         cell.className = `day-cell ${isO ? 'other-month' : ''} ${d === state.today.getDate() && m === state.today.getMonth()+1 && y === state.today.getFullYear() ? 'is-today' : ''} ${i%7>4?'weekend':''}`;
         cell.innerHTML = `<span class="solar-num">${d}</span><span class="lunar-num ${hasH ? 'lunar-highlight' : ''}">${lunar.day === 1 || d === 1 ? lunar.day+'/'+lunar.month : lunar.day}</span><div class="cell-markers">${hasH ? '<div class="dot dot-holiday"></div>' : ''}${hasP ? '<div class="dot dot-personal"></div>' : ''}${hasS ? '<div class="dot dot-shared"></div>' : ''}</div>`;
@@ -355,39 +393,66 @@
       }
     }
 
+    // -- NÚT ĐIỀU HƯỚNG LỊCH (Bao gồm chuyển năm) --
     document.getElementById('btn-prev-month').onclick = () => { state.viewMonth--; if(state.viewMonth<1){state.viewMonth=12;state.viewYear--;} renderCalendar(); };
     document.getElementById('btn-next-month').onclick = () => { state.viewMonth++; if(state.viewMonth>12){state.viewMonth=1;state.viewYear++;} renderCalendar(); };
+    document.getElementById('btn-prev-year').onclick = () => { state.viewYear--; renderCalendar(); };
+    document.getElementById('btn-next-year').onclick = () => { state.viewYear++; renderCalendar(); };
 
+    // -- LOGIC HIỂN THỊ TÀI KHOẢN & CHE TÊN USER --
     function activateUserUI() {
       document.getElementById('identity-setup').classList.add('hidden');
       document.getElementById('identity-active').classList.remove('hidden');
-      document.getElementById('user-display-name').textContent = state.user.name;
-      document.getElementById('user-uid-code').textContent = state.user.shareId;
+      
+      const nameEl = document.getElementById('user-display-name');
+      nameEl.dataset.name = state.user.name;
+      nameEl.textContent = '***'; // Che tên lại
+      
+      document.getElementById('user-uid-code').textContent = state.user.shareId; // Hiện ID
+      
+      document.getElementById('icon-eye').classList.remove('hidden');
+      document.getElementById('icon-eye-off').classList.add('hidden');
     }
 
+    document.getElementById('btn-toggle-eye').onclick = () => {
+      const nameEl = document.getElementById('user-display-name');
+      const eye = document.getElementById('icon-eye');
+      const eyeOff = document.getElementById('icon-eye-off');
+      
+      if (nameEl.textContent === '***') {
+        nameEl.textContent = nameEl.dataset.name; // Hiện tên
+        eye.classList.add('hidden');
+        eyeOff.classList.remove('hidden');
+      } else {
+        nameEl.textContent = '***'; // Che tên
+        eye.classList.remove('hidden');
+        eyeOff.classList.add('hidden');
+      }
+    };
+
+    // -- KHỞI TẠO FIREBASE AUTH --
     async function initFirebaseAuth() {
       try {
-        const cred = await signInAnonymously(auth);
-        const authUid = cred.user.uid;
-        
-        if (state.user && state.user.shareId) {
-          state.user.authUid = authUid;
-          localStorage.setItem('lvn_user_v5', JSON.stringify(state.user));
+        await signInAnonymously(auth);
+        if (state.user && state.user.authUid) {
           activateUserUI();
           syncData();
         } else {
-          state.user = { authUid: authUid }; 
+          // Chỉ lấy auth tĩnh nếu chưa từng đăng nhập
+          state.user = { authUid: auth.currentUser.uid };
         }
       } catch(e) { 
-        console.error(e); 
         showToast("Lỗi kết nối Firebase Auth");
       }
     }
 
+    // -- TẠO TÀI KHOẢN MỚI --
     document.getElementById('btn-save-name').onclick = async () => {
       const n = document.getElementById('input-display-name').value.trim();
       if(!n) return;
       
+      // Chắc chắn dùng UID chuẩn của Auth hiện tại
+      state.user.authUid = auth.currentUser.uid;
       const shareId = Math.floor(1000 + Math.random() * 9000).toString();
       state.user.name = n;
       state.user.shareId = shareId;
@@ -399,40 +464,190 @@
         await set(ref(db, `users/${state.user.authUid}`), state.user); 
         await set(ref(db, `shareMappings/${shareId}`), state.user.authUid);
         syncData(); 
+        showToast("Đã tạo tài khoản!");
       } catch(e){
-        console.error(e);
+        showToast("Không thể lưu lên mây. Vui lòng thử lại!");
       }
-      showToast("Đã lưu tài khoản!");
     };
 
-    document.getElementById('btn-logout').onclick = () => {
-      localStorage.removeItem('lvn_user_v5'); localStorage.removeItem('lvn_events_v5');
-      state.user = null; state.events = {};
-      document.getElementById('identity-setup').classList.remove('hidden');
-      document.getElementById('identity-active').classList.add('hidden');
-      renderDayTab(); renderCalendar(); showToast("Đã đăng xuất cục bộ.");
-      setTimeout(() => window.location.reload(), 800);
+    // -- ĐĂNG NHẬP LẤY LẠI DỮ LIỆU CŨ BẰNG TÊN USER --
+    document.getElementById('btn-login-id').onclick = async () => {
+      const loginName = document.getElementById('input-login-id').value.trim();
+      if(!loginName) return showToast("Vui lòng nhập tên người dùng!");
+      
+      try {
+        // Cần lấy tất cả users để tìm theo tên
+        const snap = await get(ref(db, 'users'));
+        if(snap.exists()) {
+          const users = snap.val();
+          let foundUser = null;
+          let foundAuthUid = null;
+          
+          for (const [authUid, userData] of Object.entries(users)) {
+            if (userData.name === loginName) {
+              foundUser = userData;
+              foundAuthUid = authUid;
+              break;
+            }
+          }
+          
+          if (foundUser) {
+            state.user = foundUser;
+            state.user.authUid = foundAuthUid; // Ensure authUid is set
+            localStorage.setItem('lvn_user_v5', JSON.stringify(state.user));
+            activateUserUI();
+            syncData(); // Tải sự kiện cũ xuống lịch
+            showToast(`Chào mừng trở lại!`);
+          } else {
+             showToast("Không tìm thấy tên người dùng này!");
+          }
+        } else {
+          showToast("Không có dữ liệu người dùng!");
+        }
+      } catch(e) {
+        console.error(e);
+        showToast("Lỗi truy xuất dữ liệu Firebase!");
+      }
     };
+
+    // -- ĐĂNG XUẤT --
+    document.getElementById('btn-logout').onclick = () => {
+      showConfirm("Đăng xuất?", "Bạn sẽ cần Tên người dùng cũ để đăng nhập lại lấy dữ liệu. Tiếp tục đăng xuất?", () => {
+        localStorage.removeItem('lvn_user_v5'); localStorage.removeItem('lvn_events_v5');
+        state.user = null; state.events = {};
+        showToast("Đã đăng xuất.");
+        setTimeout(() => window.location.reload(), 800);
+      });
+    };
+
+    const sharedUnsubs = {};
+    let myEventsUnsub = null;
+    let invitesInUnsub = null;
+    let invitesOutUnsub = null;
+
+    function clearAllSyncListeners() {
+      if (myEventsUnsub) { myEventsUnsub(); myEventsUnsub = null; }
+      if (invitesInUnsub) { invitesInUnsub(); invitesInUnsub = null; }
+      if (invitesOutUnsub) { invitesOutUnsub(); invitesOutUnsub = null; }
+      Object.keys(sharedUnsubs).forEach(id => {
+        sharedUnsubs[id]();
+        delete sharedUnsubs[id];
+      });
+      state.sharedEvents = {};
+    }
 
     function syncData() {
       if(!state.user || !state.user.authUid) return;
-      onValue(ref(db, `events/${state.user.authUid}`), snap => {
+      clearAllSyncListeners();
+
+      myEventsUnsub = onValue(ref(db, `events/${state.user.authUid}`), snap => {
         state.events = snap.val() || {};
         localStorage.setItem('lvn_events_v5', JSON.stringify(state.events));
         renderDayTab(); renderCalendar();
       });
-      onValue(ref(db, `invites/${state.user.authUid}`), snap => {
-        const invs = snap.val() || {}; const list = document.getElementById('share-invites-list'); list.innerHTML = ''; let has = false;
-        Object.keys(invs).forEach(senderAuthId => {
-          if(invs[senderAuthId].status === 'pending') {
-            has = true; list.innerHTML += `<div class="event-card shared"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>Từ: ${invs[senderAuthId].senderName}</h4><button class="pill-btn" onclick="acceptShare('${senderAuthId}')">Nhận</button></div></div>`;
-          } else if (invs[senderAuthId].status === 'accepted') {
-            has = true; list.innerHTML += `<div class="event-card shared"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>Đang nhận từ: ${invs[senderAuthId].senderName}</h4><button class="pill-btn" style="color:var(--holiday-color);" onclick="stopShare('${senderAuthId}')">Hủy</button></div></div>`;
-            onValue(ref(db, `events/${senderAuthId}`), sSnap => { state.sharedEvents[senderAuthId] = { name: invs[senderAuthId].senderName, events: sSnap.val() || {} }; renderDayTab(); renderCalendar(); });
+
+      // Sync Lời mời NHẬN (từ người khác gửi cho mình)
+      invitesInUnsub = onValue(ref(db, `invites/${state.user.authUid}`), snap => {
+        state.invitesIn = snap.val() || {};
+        renderInvitesList();
+        
+        // Dọn dẹp tất cả sự kiện chia sẻ không phải 'accepted'
+        const allTrackedIds = new Set([...Object.keys(sharedUnsubs), ...Object.keys(state.sharedEvents)]);
+        allTrackedIds.forEach(id => {
+          if (!state.invitesIn[id] || state.invitesIn[id].status !== 'accepted') {
+            if (sharedUnsubs[id]) {
+              sharedUnsubs[id]();
+              delete sharedUnsubs[id];
+            }
+            delete state.sharedEvents[id];
           }
         });
-        if(!has) list.innerHTML = '<p style="font-size:0.9rem; color:var(--text-secondary);">Chưa có lời mời.</p>';
+        
+        Object.keys(state.invitesIn).forEach(senderAuthId => {
+          if (state.invitesIn[senderAuthId].status === 'accepted') {
+            if (!sharedUnsubs[senderAuthId]) {
+              sharedUnsubs[senderAuthId] = onValue(ref(db, `events/${senderAuthId}`), sSnap => {
+                // Kiểm tra lại lần nữa tại thời điểm callback chạy
+                if (!state.invitesIn[senderAuthId] || state.invitesIn[senderAuthId].status !== 'accepted') {
+                  delete state.sharedEvents[senderAuthId];
+                  renderDayTab(); renderCalendar();
+                  return;
+                }
+                state.sharedEvents[senderAuthId] = { name: state.invitesIn[senderAuthId].senderName, events: sSnap.val() || {} }; 
+                renderDayTab(); renderCalendar(); 
+              });
+            }
+          } else {
+            // Nếu đang ở trạng thái pending hoặc khác, đảm bảo xóa sạch sự kiện khỏi lịch
+            if (sharedUnsubs[senderAuthId]) {
+              sharedUnsubs[senderAuthId]();
+              delete sharedUnsubs[senderAuthId];
+            }
+            delete state.sharedEvents[senderAuthId];
+          }
+        });
+        renderDayTab(); renderCalendar();
       });
+
+      // Sync Lời mời GỬI (mình gửi cho người khác)
+      invitesOutUnsub = onValue(ref(db, `invitesOut/${state.user.authUid}`), snap => {
+        state.invitesOut = snap.val() || {};
+        renderInvitesList();
+      });
+    }
+
+    function renderInvitesList() {
+      const list = document.getElementById('share-invites-list');
+      list.innerHTML = '';
+      let has = false;
+
+      // Render Lời mời ĐẾN (Nhận)
+      Object.keys(state.invitesIn).forEach(senderAuthId => {
+        const inv = state.invitesIn[senderAuthId];
+        has = true;
+        if (inv.status === 'pending') {
+          list.innerHTML += `<div class="event-card shared" style="border-left-color: #f59e0b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px;">
+              <div>
+                <p style="font-size:0.75rem; color:#f59e0b; font-weight:bold;">LỜI MỜI MỚI (CHỜ NHẬN)</p>
+                <h4>Từ: ${inv.senderName}</h4>
+              </div>
+              <div style="display:flex; gap: 8px; flex-shrink: 0;">
+                <button class="pill-btn" style="flex:0; padding: 8px 16px; min-height: 38px; background: var(--accent-strong); color: #fff; border: none;" onclick="acceptShare('${senderAuthId}')">Nhận</button>
+                <button class="pill-btn" style="flex:0; padding: 8px 14px; min-height: 38px; color: var(--holiday-color); border-color: var(--holiday-color);" onclick="rejectShare('${senderAuthId}')">Xóa</button>
+              </div>
+            </div>
+          </div>`;
+        } else if (inv.status === 'accepted') {
+          list.innerHTML += `<div class="event-card shared">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px;">
+              <div>
+                <p style="font-size:0.75rem; color:var(--shared-color); font-weight:bold;">ĐANG NHẬN CHIA SẺ</p>
+                <h4>Từ: ${inv.senderName}</h4>
+              </div>
+              <button class="pill-btn" style="flex:0; padding: 8px 14px; min-height: 38px; color:var(--holiday-color); border-color: var(--holiday-color); white-space: nowrap;" onclick="stopShare('${senderAuthId}')">Hủy nhận</button>
+            </div>
+          </div>`;
+        }
+      });
+
+      // Render Lời mời ĐI (Gửi)
+      Object.keys(state.invitesOut).forEach(targetAuthId => {
+        const inv = state.invitesOut[targetAuthId];
+        has = true;
+        const statusText = inv.status === 'accepted' ? 'ĐÃ GỬI (ĐANG CHIA SẺ)' : 'ĐÃ GỬI (CHỜ ĐỐI PHƯƠNG NHẬN)';
+        list.innerHTML += `<div class="event-card personal" style="border-left-color: #3b82f6;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px;">
+            <div>
+              <p style="font-size:0.75rem; color:#3b82f6; font-weight:bold;">${statusText}</p>
+              <h4>Cho: ${inv.targetName}</h4>
+            </div>
+            <button class="pill-btn" style="flex:0; padding: 8px 14px; min-height: 38px; color:var(--holiday-color); border-color: var(--holiday-color); white-space: nowrap;" onclick="cancelSentShare('${targetAuthId}')">Hủy chia sẻ</button>
+          </div>
+        </div>`;
+      });
+
+      if (!has) list.innerHTML = '<p style="font-size:0.9rem; color:var(--text-secondary);">Chưa có lời mời nào.</p>';
     }
 
     document.getElementById('btn-send-share').onclick = async () => {
@@ -449,6 +664,8 @@
         }
         const targetAuthUid = snap.val();
         await update(ref(db, `invites/${targetAuthUid}/${state.user.authUid}`), { senderName: state.user.name, status: 'pending' });
+        // Record outgoing invite for UI
+        await update(ref(db, `invitesOut/${state.user.authUid}/${targetAuthUid}`), { targetName: "Người dùng ID " + shareIdInput, targetShareId: shareIdInput, status: 'pending' });
         showToast("Đã gửi lời mời chia sẻ!");
       } catch(e) { 
         showToast("Lỗi khi gửi."); 
@@ -456,22 +673,63 @@
       }
     };
 
-    window.acceptShare = async (senderAuthId) => { await update(ref(db, `invites/${state.user.authUid}/${senderAuthId}`), { status: 'accepted' }); };
-    window.stopShare = async (senderAuthId) => { await remove(ref(db, `invites/${state.user.authUid}/${senderAuthId}`)); delete state.sharedEvents[senderAuthId]; renderDayTab(); renderCalendar(); };
+    window.acceptShare = async (senderAuthId) => { 
+      await update(ref(db, `invites/${state.user.authUid}/${senderAuthId}`), { status: 'accepted' }); 
+      await update(ref(db, `invitesOut/${senderAuthId}/${state.user.authUid}`), { status: 'accepted' }).catch(() => {});
+      showToast("Đã nhận lịch chia sẻ!");
+    };
+
+    window.rejectShare = async (senderAuthId) => {
+      showConfirm("Xóa lời mời?", "Bạn có chắc chắn muốn từ chối và xóa lời mời chia sẻ này không?", async () => {
+        await remove(ref(db, `invites/${state.user.authUid}/${senderAuthId}`));
+        await remove(ref(db, `invitesOut/${senderAuthId}/${state.user.authUid}`)).catch(() => {});
+        if (sharedUnsubs[senderAuthId]) {
+          sharedUnsubs[senderAuthId]();
+          delete sharedUnsubs[senderAuthId];
+        }
+        delete state.sharedEvents[senderAuthId];
+        renderDayTab(); renderCalendar();
+        showToast("Đã xóa lời mời!");
+      });
+    };
+
+    window.cancelSentShare = async (targetAuthId) => {
+      showConfirm("Hủy chia sẻ?", "Bạn có chắc chắn muốn ngừng chia sẻ sự kiện với người này?", async () => {
+        await remove(ref(db, `invites/${targetAuthId}/${state.user.authUid}`)); // Xóa quyền bên nhận
+        await remove(ref(db, `invitesOut/${state.user.authUid}/${targetAuthId}`)); // Xóa lịch sử gửi
+        showToast("Đã hủy chia sẻ!");
+      });
+    };
+
+    window.stopShare = async (senderAuthId) => { 
+      showConfirm("Hủy nhận?", "Bạn sẽ không thấy các sự kiện từ người này nữa. Đồng ý hủy?", async () => {
+        await remove(ref(db, `invites/${state.user.authUid}/${senderAuthId}`)); 
+        await remove(ref(db, `invitesOut/${senderAuthId}/${state.user.authUid}`)).catch(() => {});
+        if (sharedUnsubs[senderAuthId]) {
+          sharedUnsubs[senderAuthId]();
+          delete sharedUnsubs[senderAuthId];
+        }
+        delete state.sharedEvents[senderAuthId]; 
+        renderDayTab(); renderCalendar(); 
+        showToast("Đã hủy nhận chia sẻ!");
+      });
+    };
 
     document.getElementById('btn-add-event').onclick = () => {
       document.getElementById('ev-date').value = `${state.selected.year}-${String(state.selected.month).padStart(2,'0')}-${String(state.selected.day).padStart(2,'0')}`;
       document.getElementById('modal-event-form').classList.add('show');
     };
 
-    document.getElementById('form-add-event').onsubmit = (e) => {
-      e.preventDefault(); // Phải nằm đầu tiên để chặn load trang
+    // -- LƯU SỰ KIỆN: Thêm `await set` để đảm bảo Firebase ghi thành công --
+    document.getElementById('form-add-event').onsubmit = async (e) => {
+      e.preventDefault(); 
       try {
         if (!state.user || !state.user.name) { showToast("Vui lòng thiết lập Tên ở mục Tài khoản!"); closeModal('modal-event-form'); return; }
         
         const id = 'ev_' + Date.now();
         const payload = { id, title: document.getElementById('ev-title').value, date: document.getElementById('ev-date').value, desc: document.getElementById('ev-desc').value, ownerId: state.user.authUid };
         
+        // Lưu local để UI phản hồi ngay
         state.events[id] = payload;
         localStorage.setItem('lvn_events_v5', JSON.stringify(state.events));
         
@@ -480,11 +738,13 @@
         
         document.getElementById('form-add-event').reset();
         renderDayTab(); renderCalendar(); 
-        showToast("Lưu thành công!");
         
-        set(ref(db, `events/${state.user.authUid}/${id}`), payload).catch(err => console.error(err));
+        // Buộc hệ thống đợi đồng bộ mây thành công
+        await set(ref(db, `events/${state.user.authUid}/${id}`), payload);
+        showToast("Đã lưu sự kiện đồng bộ!");
       } catch(err) {
         console.error("Lỗi khi lưu sự kiện:", err);
+        showToast("Lưu thiết bị thành công nhưng lỗi Cloud!");
       }
     };
 
@@ -494,25 +754,23 @@
         const evId = btn.dataset.id;
         const ownerId = btn.dataset.owner;
         if (!state.user || state.user.authUid !== ownerId) { showToast("Không có quyền xóa!"); return; }
-        if (!confirm("Bạn chắc chắn muốn xóa sự kiện này?")) return;
         
-        delete state.events[evId];
-        localStorage.setItem('lvn_events_v5', JSON.stringify(state.events));
-        renderDayTab(); renderCalendar(); showToast("Xóa thành công!");
-        
-        remove(ref(db, `events/${state.user.authUid}/${evId}`)).catch(err => console.error(err));
+        showConfirm("Xóa sự kiện?", "Bạn có chắc chắn muốn xóa sự kiện này không? Hành động này không thể hoàn tác.", () => {
+          delete state.events[evId];
+          localStorage.setItem('lvn_events_v5', JSON.stringify(state.events));
+          renderDayTab(); renderCalendar(); showToast("Xóa thành công!");
+          remove(ref(db, `events/${state.user.authUid}/${evId}`)).catch(err => console.error(err));
+        });
       }
     });
 
+    document.getElementById('btn-confirm-ok').onclick = () => {
+      if (currentConfirmCb) currentConfirmCb();
+      closeModal('modal-confirm');
+    };
+
     initFirebaseAuth();
     renderDayTab(); renderCalendar();
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => console.log('Service Worker đã kích hoạt!'))
-        .catch((err) => console.log('Lỗi SW:', err));
-    }
   </script>
 </body>
 </html>
