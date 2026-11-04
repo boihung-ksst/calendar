@@ -214,9 +214,10 @@
             <div class="uid-display" id="user-uid-code">...</div>
           </div>
           
-          <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
             <button class="pill-btn" onclick="navigator.clipboard.writeText(document.getElementById('user-uid-code').textContent); showToast('Đã copy ID!');">Copy ID</button>
-            <button id="btn-logout" class="pill-btn" style="color: var(--holiday-color); border-color: var(--holiday-color);">Đăng xuất</button>
+            <button id="btn-logout" class="pill-btn" style="color: var(--text-secondary);">Đăng xuất</button>
+            <button id="btn-delete-user" class="pill-btn" style="color: var(--holiday-color); border-color: var(--holiday-color); flex-basis: 100%;">Xóa User vĩnh viễn</button>
           </div>
           
           <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 12px;">Chia sẻ sự kiện</h3>
@@ -369,9 +370,31 @@
 
       const upList = document.getElementById('upcoming-events-list'); upList.innerHTML = '';
       const todayKey = `${state.today.getFullYear()}-${String(state.today.getMonth()+1).padStart(2,'0')}-${String(state.today.getDate()).padStart(2,'0')}`;
-      const future = Object.values(state.events).filter(e => e.date > todayKey).sort((a,b) => a.date.localeCompare(b.date)).slice(0, 2);
-      if (future.length === 0) upList.innerHTML = '<p style="font-size:0.95rem; color:var(--text-secondary); text-align:center;">Chưa có sự kiện nào sắp tới.</p>';
-      else future.forEach(e => { const [y,m,d] = e.date.split('-'); upList.innerHTML += `<div class="event-card personal"><h4>📌 ${e.title}</h4><p class="event-meta">Ngày: ${d}/${m}/${y}</p></div>`; });
+      
+      const combinedFuture = [];
+      Object.values(state.events).filter(e => e.date > todayKey).forEach(e => {
+        combinedFuture.push({ ...e, _type: 'personal' });
+      });
+      Object.entries(state.sharedEvents).forEach(([senderAuthId, fb]) => {
+        if (!state.invitesIn[senderAuthId] || state.invitesIn[senderAuthId].status !== 'accepted') return;
+        Object.values(fb.events || {}).filter(e => e.date > todayKey).forEach(e => {
+          combinedFuture.push({ ...e, _type: 'shared', _senderName: fb.name });
+        });
+      });
+
+      const future = combinedFuture.sort((a,b) => a.date.localeCompare(b.date)).slice(0, 3);
+      if (future.length === 0) {
+        upList.innerHTML = '<p style="font-size:0.95rem; color:var(--text-secondary); text-align:center;">Chưa có sự kiện nào sắp tới.</p>';
+      } else {
+        future.forEach(e => {
+          const [y,m,d] = e.date.split('-');
+          if (e._type === 'shared') {
+            upList.innerHTML += `<div class="event-card shared"><h4>🤝 ${e.title}</h4><p class="event-meta">Ngày: ${d}/${m}/${y} • Từ: ${e._senderName}</p></div>`;
+          } else {
+            upList.innerHTML += `<div class="event-card personal"><h4>📌 ${e.title}</h4><p class="event-meta">Ngày: ${d}/${m}/${y}</p></div>`;
+          }
+        });
+      }
     }
 
     function renderCalendar() {
@@ -434,39 +457,86 @@
     async function initFirebaseAuth() {
       try {
         await signInAnonymously(auth);
-        if (state.user && state.user.authUid) {
+        if (state.user && state.user.authUid && state.user.name) {
           activateUserUI();
           syncData();
         } else {
-          // Chỉ lấy auth tĩnh nếu chưa từng đăng nhập
-          state.user = { authUid: auth.currentUser.uid };
+          state.user = null;
         }
       } catch(e) { 
         showToast("Lỗi kết nối Firebase Auth");
       }
     }
 
-    // -- TẠO TÀI KHOẢN MỚI --
+    // Hàm hỗ trợ tìm user theo tên trên Firebase (không phân biệt hoa thường ở hai đầu khoảng trắng)
+    async function findExistingUserByName(name) {
+      const snap = await get(ref(db, 'users'));
+      if (!snap.exists()) return null;
+      const users = snap.val();
+      const target = name.trim().toLowerCase();
+      for (const [uid, uData] of Object.entries(users)) {
+        if (uData && uData.name && uData.name.trim().toLowerCase() === target) {
+          return { ...uData, authUid: uid };
+        }
+      }
+      return null;
+    }
+
+    // -- TẠO TÀI KHOẢN MỚI HOẶC ĐĂNG NHẬP NẾU TÊN ĐÃ TỒN TẠI --
     document.getElementById('btn-save-name').onclick = async () => {
       const n = document.getElementById('input-display-name').value.trim();
-      if(!n) return;
+      if(!n) return showToast("Vui lòng nhập tên người dùng!");
       
-      // Chắc chắn dùng UID chuẩn của Auth hiện tại
-      state.user.authUid = auth.currentUser.uid;
-      const shareId = Math.floor(1000 + Math.random() * 9000).toString();
-      state.user.name = n;
-      state.user.shareId = shareId;
-      
-      localStorage.setItem('lvn_user_v5', JSON.stringify(state.user));
-      activateUserUI();
-      
-      try { 
-        await set(ref(db, `users/${state.user.authUid}`), state.user); 
-        await set(ref(db, `shareMappings/${shareId}`), state.user.authUid);
+      try {
+        // Kiểm tra xem user đã tồn tại trên Firebase chưa
+        const existingUser = await findExistingUserByName(n);
+        if (existingUser) {
+          // Nếu đã có, lấy đúng dữ liệu của user đó (không ghi đè, không dùng chung ID trình duyệt)
+          clearAllSyncListeners();
+          state.events = {};
+          state.sharedEvents = {};
+          state.user = existingUser;
+          localStorage.setItem('lvn_user_v5', JSON.stringify(state.user));
+          localStorage.removeItem('lvn_events_v5');
+          document.getElementById('input-display-name').value = '';
+          activateUserUI();
+          syncData();
+          showToast(`Đã tải dữ liệu của ${state.user.name}!`);
+          return;
+        }
+
+        // Nếu chưa tồn tại, tạo một UID hoàn toàn độc lập (không gắn vào auth.currentUser.uid của trình duyệt)
+        clearAllSyncListeners();
+        state.events = {};
+        state.sharedEvents = {};
+        const newUserId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        let shareId = Math.floor(1000 + Math.random() * 9000).toString();
+        
+        // Đảm bảo shareId 4 số không trùng
+        const mapSnap = await get(ref(db, `shareMappings/${shareId}`));
+        if (mapSnap.exists()) {
+          shareId = Math.floor(1000 + Math.random() * 9000).toString();
+        }
+
+        state.user = {
+          authUid: newUserId,
+          name: n,
+          shareId: shareId
+        };
+        
+        localStorage.setItem('lvn_user_v5', JSON.stringify(state.user));
+        localStorage.setItem('lvn_events_v5', JSON.stringify({}));
+        document.getElementById('input-display-name').value = '';
+        activateUserUI();
+        
+        await set(ref(db, `users/${newUserId}`), state.user); 
+        await set(ref(db, `shareMappings/${shareId}`), newUserId);
         syncData(); 
-        showToast("Đã tạo tài khoản!");
-      } catch(e){
-        showToast("Không thể lưu lên mây. Vui lòng thử lại!");
+        renderDayTab(); renderCalendar();
+        showToast("Đã tạo tài khoản mới!");
+      } catch(e) {
+        console.error(e);
+        showToast("Không thể kết nối Cloud. Vui lòng thử lại!");
       }
     };
 
@@ -476,33 +546,20 @@
       if(!loginName) return showToast("Vui lòng nhập tên người dùng!");
       
       try {
-        // Cần lấy tất cả users để tìm theo tên
-        const snap = await get(ref(db, 'users'));
-        if(snap.exists()) {
-          const users = snap.val();
-          let foundUser = null;
-          let foundAuthUid = null;
-          
-          for (const [authUid, userData] of Object.entries(users)) {
-            if (userData.name === loginName) {
-              foundUser = userData;
-              foundAuthUid = authUid;
-              break;
-            }
-          }
-          
-          if (foundUser) {
-            state.user = foundUser;
-            state.user.authUid = foundAuthUid; // Ensure authUid is set
-            localStorage.setItem('lvn_user_v5', JSON.stringify(state.user));
-            activateUserUI();
-            syncData(); // Tải sự kiện cũ xuống lịch
-            showToast(`Chào mừng trở lại!`);
-          } else {
-             showToast("Không tìm thấy tên người dùng này!");
-          }
+        const foundUser = await findExistingUserByName(loginName);
+        if (foundUser) {
+          clearAllSyncListeners();
+          state.events = {};
+          state.sharedEvents = {};
+          state.user = foundUser;
+          localStorage.setItem('lvn_user_v5', JSON.stringify(state.user));
+          localStorage.removeItem('lvn_events_v5');
+          document.getElementById('input-login-id').value = '';
+          activateUserUI();
+          syncData(); // Tải sự kiện của user đó xuống lịch
+          showToast(`Chào mừng trở lại, ${state.user.name}!`);
         } else {
-          showToast("Không có dữ liệu người dùng!");
+          showToast("Không tìm thấy tên người dùng này!");
         }
       } catch(e) {
         console.error(e);
@@ -512,11 +569,68 @@
 
     // -- ĐĂNG XUẤT --
     document.getElementById('btn-logout').onclick = () => {
-      showConfirm("Đăng xuất?", "Bạn sẽ cần Tên người dùng cũ để đăng nhập lại lấy dữ liệu. Tiếp tục đăng xuất?", () => {
-        localStorage.removeItem('lvn_user_v5'); localStorage.removeItem('lvn_events_v5');
-        state.user = null; state.events = {};
+      showConfirm("Đăng xuất?", "Bạn sẽ cần Tên người dùng để đăng nhập lại lấy dữ liệu. Tiếp tục đăng xuất?", () => {
+        clearAllSyncListeners();
+        localStorage.removeItem('lvn_user_v5');
+        localStorage.removeItem('lvn_events_v5');
+        state.user = null;
+        state.events = {};
+        state.sharedEvents = {};
+        state.invitesIn = {};
+        state.invitesOut = {};
+        document.getElementById('identity-setup').classList.remove('hidden');
+        document.getElementById('identity-active').classList.add('hidden');
+        renderDayTab(); renderCalendar();
         showToast("Đã đăng xuất.");
-        setTimeout(() => window.location.reload(), 800);
+      });
+    };
+
+    // -- XÓA USER VĨNH VIỄN --
+    document.getElementById('btn-delete-user').onclick = () => {
+      if (!state.user || !state.user.authUid) return;
+      showConfirm("Xóa User vĩnh viễn?", "Toàn bộ tài khoản, mã ID, lời mời chia sẻ và tất cả sự kiện của User này sẽ bị xóa sạch khỏi hệ thống. Bạn có chắc chắn không?", async () => {
+        try {
+          const uid = state.user.authUid;
+          const sId = state.user.shareId;
+          clearAllSyncListeners();
+
+          // Xóa các kết nối chia sẻ liên quan đến user này
+          const invInSnap = await get(ref(db, `invites/${uid}`));
+          if (invInSnap.exists()) {
+            for (const senderId of Object.keys(invInSnap.val())) {
+              await remove(ref(db, `invitesOut/${senderId}/${uid}`)).catch(() => {});
+            }
+          }
+          const invOutSnap = await get(ref(db, `invitesOut/${uid}`));
+          if (invOutSnap.exists()) {
+            for (const targetId of Object.keys(invOutSnap.val())) {
+              await remove(ref(db, `invites/${targetId}/${uid}`)).catch(() => {});
+            }
+          }
+
+          // Xóa dữ liệu chính trên Firebase
+          if (sId) await remove(ref(db, `shareMappings/${sId}`)).catch(() => {});
+          await remove(ref(db, `events/${uid}`)).catch(() => {});
+          await remove(ref(db, `invites/${uid}`)).catch(() => {});
+          await remove(ref(db, `invitesOut/${uid}`)).catch(() => {});
+          await remove(ref(db, `users/${uid}`)).catch(() => {});
+
+          // Xóa dữ liệu local và reset UI
+          localStorage.removeItem('lvn_user_v5');
+          localStorage.removeItem('lvn_events_v5');
+          state.user = null;
+          state.events = {};
+          state.sharedEvents = {};
+          state.invitesIn = {};
+          state.invitesOut = {};
+          document.getElementById('identity-setup').classList.remove('hidden');
+          document.getElementById('identity-active').classList.add('hidden');
+          renderDayTab(); renderCalendar();
+          showToast("Đã xóa tài khoản vĩnh viễn!");
+        } catch (err) {
+          console.error(err);
+          showToast("Lỗi khi xóa tài khoản trên Cloud!");
+        }
       });
     };
 
