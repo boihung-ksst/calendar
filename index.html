@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#edf2f9" />
+  <script>
+    try { if (localStorage.getItem('lich_nha_theme_v1') === 'dark') document.documentElement.classList.add('dark-mode'); } catch (_) {}
+  </script>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="application-name" content="lịch nhà" />
@@ -852,6 +855,215 @@
       #tab-day .day-good-bad .gb-card p { font-size:.68rem; }
       #tab-day .add-day-event-button { min-height:64px; font-size:1.02rem; }
     }
+
+
+    /* NAV LIQUID GLASS — lớp kính sâu, ánh sáng phản chiếu và trạng thái tab rõ ràng */
+    .bottom-nav-container {
+      isolation: isolate; overflow: hidden; position: fixed;
+      background: linear-gradient(135deg, rgba(255,255,255,.74), rgba(239,245,255,.43) 52%, rgba(255,255,255,.56));
+      -webkit-backdrop-filter: blur(42px) saturate(220%) brightness(1.08);
+      backdrop-filter: blur(42px) saturate(220%) brightness(1.08);
+      border: 1px solid rgba(255,255,255,.92);
+      box-shadow: 0 16px 42px rgba(61,78,124,.18), 0 3px 10px rgba(80,98,145,.07), inset 0 1.5px 0 rgba(255,255,255,.98), inset 0 -1px 0 rgba(255,255,255,.38);
+    }
+    .bottom-nav-container::before {
+      content: ""; position: absolute; inset: 1px; border-radius: inherit; pointer-events: none; z-index: -1;
+      background: linear-gradient(112deg, rgba(255,255,255,.56), transparent 37%, rgba(255,255,255,.16) 72%, rgba(255,255,255,.34));
+    }
+    .bottom-nav-container::after {
+      content: ""; position: absolute; top: -28px; left: 12%; width: 42%; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.58); filter: blur(17px); pointer-events: none; z-index: -1;
+    }
+    .nav-item {
+      position: relative; z-index: 1; border: 1px solid transparent;
+      transition: color .25s ease, background .28s ease, box-shadow .28s ease, transform .28s cubic-bezier(.2,.8,.2,1);
+    }
+    .nav-item:active { transform: scale(.94); }
+    .nav-item.active {
+      background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(130,221,218,.34) 42%, rgba(157,145,244,.32));
+      border-color: rgba(255,255,255,.88); color: #535fc3;
+      box-shadow: 0 7px 18px rgba(89,108,176,.16), inset 0 1.5px 0 rgba(255,255,255,.98), inset 0 -1px 0 rgba(255,255,255,.30);
+    }
+    .nav-item.active::before {
+      content: ""; position: absolute; top: 3px; left: 22%; right: 22%; height: 1px;
+      background: rgba(255,255,255,.98); border-radius: 50%; box-shadow: 0 0 8px rgba(255,255,255,.8);
+    }
+    .nav-item svg { filter: drop-shadow(0 1px 1px rgba(255,255,255,.35)); }
+
+    /* Tab transition: chuyển cảnh ngắn, mượt và có hướng */
+    .tab-content { animation: none; }
+    .tab-content.tab-anim-forward { animation: tabEnterForward .34s cubic-bezier(.2,.75,.25,1) both; }
+    .tab-content.tab-anim-backward { animation: tabEnterBackward .34s cubic-bezier(.2,.75,.25,1) both; }
+    @keyframes tabEnterForward { from { opacity: 0; transform: translate3d(22px, 5px, 0) scale(.992); filter: blur(3px); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); filter: blur(0); } }
+    @keyframes tabEnterBackward { from { opacity: 0; transform: translate3d(-22px, 5px, 0) scale(.992); filter: blur(3px); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); filter: blur(0); } }
+
+    /* Tab 1: bỏ nhãn trang trí trùng lặp, giữ nội dung hữu ích */
+    #tab-day .date-board-head { justify-content: flex-start; margin: 0 2px 9px; min-height: 15px; }
+    #tab-day .date-board-label { color: #8a96b2; font-size: .64rem; font-weight: 950; letter-spacing: .13em; }
+    #tab-day .quote-mark { display: none; }
+    #tab-day .home-quote { padding: 11px 14px; border-radius: 19px; }
+    #tab-day .home-quote .quote-copy p { font-size: .8rem; line-height: 1.4; }
+    #tab-day .day-events-heading-copy p { display: none; }
+    #tab-day .day-events-heading { margin-bottom: 10px; }
+    #tab-day .date-board { padding: 13px; }
+
+    .theme-toggle { flex: 0 0 43px; cursor: pointer; transition: transform .2s ease, background .25s ease, box-shadow .25s ease; }
+    .theme-toggle:active { transform: scale(.92); }
+    .theme-toggle .theme-icon { width: 21px; height: 21px; }
+    .theme-toggle .theme-icon-sun { display: none; }
+
+    /* Dark mode — đồng bộ bảng lịch, thẻ kính, chữ và thanh điều hướng */
+    html.dark-mode { color-scheme: dark; }
+    html.dark-mode body {
+      color: #e6ecf8;
+      background: radial-gradient(ellipse at 8% 5%, rgba(40,112,116,.23), transparent 36%),
+                  radial-gradient(ellipse at 94% 18%, rgba(91,79,160,.25), transparent 34%),
+                  linear-gradient(145deg, #101827 0%, #151e30 52%, #1d1a31 100%);
+      background-attachment: fixed;
+    }
+    html.dark-mode .ambient-bg { background: transparent; }
+    html.dark-mode .orb { opacity: .20; }
+    html.dark-mode .glass-panel,
+    html.dark-mode .events-tab-panel,
+    html.dark-mode .account-panel {
+      color: #e6ecf8; background: linear-gradient(145deg, rgba(34,47,68,.84), rgba(23,34,54,.74));
+      border-color: rgba(205,219,255,.13);
+      box-shadow: 0 18px 46px rgba(0,0,0,.22), inset 0 1px 0 rgba(235,242,255,.13);
+    }
+    html.dark-mode .glass-panel::before { background: linear-gradient(180deg, rgba(225,236,255,.07), transparent); }
+    html.dark-mode .brand-copy h1,
+    html.dark-mode .home-brand .brand-copy h1,
+    html.dark-mode .date-board-head strong,
+    html.dark-mode .detail-weekday,
+    html.dark-mode .detail-solar-date,
+    html.dark-mode .date-hero .detail-solar-date,
+    html.dark-mode .lunar-date-copy strong,
+    html.dark-mode .lunar-year-copy em,
+    html.dark-mode .day-events-heading-copy h2,
+    html.dark-mode .events-tab-intro h2,
+    html.dark-mode .account-heading-copy h2,
+    html.dark-mode .upcoming-info h3,
+    html.dark-mode .section-title { color: #e4ebfa !important; }
+    html.dark-mode .brand-copy p,
+    html.dark-mode .home-brand .brand-copy p,
+    html.dark-mode .detail-month-year,
+    html.dark-mode .date-board-label,
+    html.dark-mode .lunar-date-copy span,
+    html.dark-mode .lunar-year-copy span,
+    html.dark-mode .events-tab-intro p,
+    html.dark-mode .account-heading-copy p,
+    html.dark-mode .upcoming-info p { color: #9eacc8 !important; }
+    html.dark-mode .top-action,
+    html.dark-mode .icon-btn,
+    html.dark-mode .pill-btn,
+    html.dark-mode .mini-btn,
+    html.dark-mode .help-chip {
+      color: #dce5fa; background: linear-gradient(145deg, rgba(75,91,124,.68), rgba(39,54,82,.62));
+      border-color: rgba(218,229,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 7px 18px rgba(0,0,0,.16);
+    }
+    html.dark-mode .home-quote,
+    html.dark-mode .date-board,
+    html.dark-mode #tab-day .date-board,
+    html.dark-mode #tab-day .date-hero,
+    html.dark-mode #tab-day .date-insights .lunar-feature,
+    html.dark-mode #tab-day .day-events-panel,
+    html.dark-mode .quote-card {
+      background: linear-gradient(145deg, rgba(50,66,94,.70), rgba(31,45,68,.66));
+      border-color: rgba(219,230,255,.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 9px 24px rgba(0,0,0,.13);
+    }
+    html.dark-mode #tab-day .date-hero.is-today { background: linear-gradient(145deg, rgba(54,148,145,.34), rgba(108,97,185,.34)); }
+    html.dark-mode #tab-day .date-hero .detail-solar-date { color: #f0f3ff !important; }
+    html.dark-mode #tab-day .moon-symbol { background: rgba(226,234,255,.10); }
+    html.dark-mode #tab-day .day-good-bad .gb-card.good { background: rgba(32,131,104,.20); border-color: rgba(151,235,204,.15); }
+    html.dark-mode #tab-day .day-good-bad .gb-card.bad { background: rgba(153,65,91,.20); border-color: rgba(255,179,198,.15); }
+    html.dark-mode #tab-day .day-good-bad .gb-card p,
+    html.dark-mode .gb-card p { color: #c0cce2; }
+    html.dark-mode #tab-day #day-events-list .event-card,
+    html.dark-mode .upcoming-event-card,
+    html.dark-mode .upcoming-empty,
+    html.dark-mode .account-welcome-card,
+    html.dark-mode .account-form-card,
+    html.dark-mode .account-profile-card,
+    html.dark-mode .account-id-card,
+    html.dark-mode .account-invites-card,
+    html.dark-mode .account-action-btn,
+    html.dark-mode .account-secondary-btn,
+    html.dark-mode .share-id-field,
+    html.dark-mode .share-digit-box,
+    html.dark-mode .lunar-pill {
+      color: #e1e9f8; background: linear-gradient(140deg, rgba(54,69,97,.78), rgba(34,48,72,.72));
+      border-color: rgba(214,226,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 7px 18px rgba(0,0,0,.12);
+    }
+    html.dark-mode .event-card h4,
+    html.dark-mode .upcoming-info h3,
+    html.dark-mode .account-welcome-card strong,
+    html.dark-mode .account-form-heading strong,
+    html.dark-mode .account-profile-name h3,
+    html.dark-mode .account-invites-heading h3 { color: #e4ebfa; }
+    html.dark-mode .event-meta,
+    html.dark-mode .event-desc,
+    html.dark-mode .account-welcome-card p,
+    html.dark-mode .account-form-heading small,
+    html.dark-mode .account-form-group label,
+    html.dark-mode .account-profile-name span,
+    html.dark-mode .account-id-card span,
+    html.dark-mode .account-id-card small,
+    html.dark-mode .account-invites-heading p,
+    html.dark-mode .share-id-hint { color: #a6b4ce; }
+    html.dark-mode .bottom-nav-container {
+      background: linear-gradient(135deg, rgba(42,55,81,.86), rgba(29,42,65,.74) 52%, rgba(45,42,73,.80));
+      border-color: rgba(224,234,255,.18);
+      box-shadow: 0 16px 42px rgba(0,0,0,.35), inset 0 1.5px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(255,255,255,.06);
+    }
+    html.dark-mode .bottom-nav-container::before { background: linear-gradient(112deg, rgba(255,255,255,.13), transparent 37%, rgba(185,198,255,.06) 72%, rgba(255,255,255,.10)); }
+    html.dark-mode .bottom-nav-container::after { background: rgba(183,196,255,.16); }
+    html.dark-mode .nav-item { color: #a9b6d0; }
+    html.dark-mode .nav-item.active {
+      color: #f0f1ff; background: linear-gradient(145deg, rgba(91,174,174,.38), rgba(114,105,190,.46));
+      border-color: rgba(232,239,255,.20); box-shadow: 0 7px 18px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.19);
+    }
+    html.dark-mode .day-cell { background: rgba(42,57,83,.66); border-color: rgba(225,235,255,.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+    html.dark-mode .day-cell .solar-num,
+    html.dark-mode .day-cell .lunar-num { color: #dbe5f8; }
+    html.dark-mode .day-cell.other-month { opacity: .42; }
+    html.dark-mode .day-cell.is-today { background: linear-gradient(145deg, #3d9994, #716bb7); border-color: rgba(255,255,255,.35); }
+    html.dark-mode .calendar-nav h2,
+    html.dark-mode .weekdays-grid { color: #e0e8f8; }
+    html.dark-mode input,
+    html.dark-mode textarea,
+    html.dark-mode .account-input {
+      color: #edf2ff; background: rgba(28,42,65,.78) !important; border-color: rgba(210,224,255,.15);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+    }
+    html.dark-mode input::placeholder,
+    html.dark-mode textarea::placeholder { color: #8494b2; }
+    html.dark-mode input:focus,
+    html.dark-mode textarea:focus { background: rgba(38,54,80,.95) !important; border-color: rgba(151,163,255,.48); }
+    html.dark-mode .glass-sheet { background: linear-gradient(145deg, rgba(39,53,78,.97), rgba(26,39,61,.96)); border-color: rgba(219,230,255,.16); color: #e7eefb; }
+    html.dark-mode .modal-backdrop { background: rgba(4,9,19,.62); }
+    html.dark-mode .status-toast { background: #dce7ff; color: #1c2a43; }
+    html.dark-mode .theme-toggle .theme-icon-moon { display: none; }
+    html.dark-mode .theme-toggle .theme-icon-sun { display: block; }
+
+
+    html.dark-mode #tab-day .home-quote .quote-copy p,
+    html.dark-mode #tab-day .quote-copy p { color: #e3eafa !important; }
+    html.dark-mode #tab-day .quote-copy span { color: #aab7d0 !important; }
+    html.dark-mode #tab-day .date-insights .lunar-feature span,
+    html.dark-mode #tab-day .lunar-year-copy span { color: #aab7d0 !important; }
+    html.dark-mode #tab-day .date-insights .lunar-feature em { color: #c2bcff !important; }
+    html.dark-mode #tab-day .day-good-bad .gb-card.good h4 { color: #88dfbd !important; }
+    html.dark-mode #tab-day .day-good-bad .gb-card.bad h4 { color: #ff9db5 !important; }
+    html.dark-mode #tab-day .day-events-empty strong { color: #e2eafa; }
+    html.dark-mode #tab-day .day-events-empty p { color: #aab7d0; }
+    html.dark-mode #tab-day .day-events-empty { background: rgba(38,53,78,.58); border-color: rgba(215,228,255,.18); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tab-content.tab-anim-forward, .tab-content.tab-anim-backward { animation-duration: .01ms; }
+      .nav-item, .theme-toggle { transition-duration: .01ms; }
+    }
+
   </style>
 </head>
 <body>
@@ -869,8 +1081,9 @@
           <h1>lịch nhà</h1>
           <p>Lịch âm · Lịch dương · Sự kiện</p>
         </div>
-        <button class="top-action" id="btn-home-settings" type="button" aria-label="Tài khoản" title="Tài khoản">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.8 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.8-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.8-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.8 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 1.9Z"/></svg>
+        <button class="top-action theme-toggle" id="btn-home-settings" type="button" aria-label="Bật chế độ tối" title="Bật chế độ tối" aria-pressed="false" aria-keyshortcuts="Enter Space">
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 15.2A8.6 8.6 0 0 1 8.8 3.8 8.8 8.8 0 1 0 20.2 15.2Z"/><path d="M16.5 3.5v3M15 5h3"/></svg>
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
         </button>
       </header>
 
@@ -899,9 +1112,7 @@
 
       <section class="glass-panel date-board" aria-label="Thông tin ngày">
         <div class="date-board-head">
-          <div class="date-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg></div>
-          <strong id="display-long-date">Hôm nay</strong>
-          <span class="lunar-pill">Âm lịch <span aria-hidden="true">⌄</span></span>
+          <strong class="date-board-label">NGÀY DƯƠNG LỊCH</strong>
         </div>
         <div class="date-overview simple-date-overview">
           <section class="date-hero is-today" id="date-hero">
@@ -934,7 +1145,7 @@
           <span class="day-events-heading-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18M12 13v5M9.5 15.5h5"/></svg>
           </span>
-          <div class="day-events-heading-copy"><h2>Sự kiện trong ngày</h2><p>Những việc bạn muốn ghi nhớ hôm nay</p></div>
+          <div class="day-events-heading-copy"><h2>Sự kiện trong ngày</h2></div>
         </div>
         <div id="day-events-list" class="events-list"></div>
         <button type="button" class="add-day-event-button" id="btn-add-event-inline"><span class="add-day-event-plus" aria-hidden="true">+</span><span>Thêm sự kiện</span></button>
@@ -1162,21 +1373,104 @@
       currentConfirmCb = cb;
       document.getElementById('modal-confirm').classList.add('show');
     }
-    function switchTab(tabId) { document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); document.querySelector(`[data-tab="${tabId}"]`).classList.add('active'); document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(tabId).classList.remove('hidden'); }
-    
+    const TAB_ORDER = ['tab-day', 'tab-calendar', 'tab-events', 'tab-account'];
+    function switchTab(tabId, directionHint = null) {
+      const nextTab = document.getElementById(tabId);
+      if (!nextTab || !TAB_ORDER.includes(tabId)) return;
+      const currentTab = document.querySelector('.tab-content:not(.hidden)');
+      const currentId = currentTab?.id || 'tab-day';
+      if (currentId === tabId) {
+        document.querySelectorAll('.nav-item').forEach(btn => {
+          const active = btn.dataset.tab === tabId;
+          btn.classList.toggle('active', active);
+          if (active) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
+        });
+        return;
+      }
+      const currentIndex = TAB_ORDER.indexOf(currentId);
+      const nextIndex = TAB_ORDER.indexOf(tabId);
+      const direction = directionHint || (nextIndex > currentIndex ? 'forward' : 'backward');
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        const active = btn.dataset.tab === tabId;
+        btn.classList.toggle('active', active);
+        if (active) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
+      });
+      if (currentTab) {
+        currentTab.classList.add('hidden');
+        currentTab.classList.remove('tab-anim-forward', 'tab-anim-backward');
+      }
+      nextTab.classList.remove('hidden', 'tab-anim-forward', 'tab-anim-backward');
+      void nextTab.offsetWidth;
+      nextTab.classList.add(direction === 'backward' ? 'tab-anim-backward' : 'tab-anim-forward');
+      nextTab.addEventListener('animationend', () => {
+        nextTab.classList.remove('tab-anim-forward', 'tab-anim-backward');
+      }, { once: true });
+    }
+
     document.querySelectorAll('.nav-item').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (btn.dataset.tab === 'tab-day') { state.selected = { day: state.today.getDate(), month: state.today.getMonth() + 1, year: state.today.getFullYear() }; renderDayTab(); }
+        if (btn.dataset.tab === 'tab-day') {
+          state.selected = { day: state.today.getDate(), month: state.today.getMonth() + 1, year: state.today.getFullYear() };
+          renderDayTab();
+        }
         switchTab(btn.dataset.tab);
       });
     });
+
+    // Vuốt ngang trong vùng nội dung để chuyển qua lại giữa các tab.
+    (() => {
+      const swipeArea = document.querySelector('.app-container');
+      if (!swipeArea) return;
+      let touchStart = null;
+      swipeArea.addEventListener('touchstart', event => {
+        if (event.touches.length !== 1 || event.target.closest('input, textarea, select, button, a, [contenteditable="true"]')) {
+          touchStart = null;
+          return;
+        }
+        const touch = event.touches[0];
+        touchStart = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+      }, { passive: true });
+      swipeArea.addEventListener('touchend', event => {
+        if (!touchStart || event.changedTouches.length !== 1 || document.querySelector('.modal-backdrop.show')) { touchStart = null; return; }
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - touchStart.x;
+        const dy = touch.clientY - touchStart.y;
+        const elapsed = Date.now() - touchStart.time;
+        touchStart = null;
+        if (Math.abs(dx) < 58 || Math.abs(dx) < Math.abs(dy) * 1.25 || elapsed > 900) return;
+        const visibleTab = document.querySelector('.tab-content:not(.hidden)');
+        const index = TAB_ORDER.indexOf(visibleTab?.id);
+        const nextIndex = dx < 0 ? index + 1 : index - 1;
+        if (index < 0 || nextIndex < 0 || nextIndex >= TAB_ORDER.length) return;
+        switchTab(TAB_ORDER[nextIndex], dx < 0 ? 'forward' : 'backward');
+      }, { passive: true });
+      swipeArea.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
+    })();
 
     function openEventForm() {
       const d = state.selected;
       document.getElementById('ev-date').value = `${d.year}-${String(d.month).padStart(2,'0')}-${String(d.day).padStart(2,'0')}`;
       document.getElementById('modal-event-form').classList.add('show');
     }
-    document.getElementById('btn-home-settings')?.addEventListener('click', () => switchTab('tab-account'));
+    const themeToggle = document.getElementById('btn-home-settings');
+    function applyTheme(isDark, persist = true) {
+      document.documentElement.classList.toggle('dark-mode', isDark);
+      themeToggle?.setAttribute('aria-pressed', String(isDark));
+      themeToggle?.setAttribute('aria-label', isDark ? 'Chuyển sang giao diện sáng' : 'Bật chế độ tối');
+      themeToggle?.setAttribute('title', isDark ? 'Chuyển sang giao diện sáng' : 'Bật chế độ tối');
+      const themeColor = document.querySelector('meta[name="theme-color"]');
+      if (themeColor) themeColor.setAttribute('content', isDark ? '#111827' : '#edf2f9');
+      if (persist) {
+        try { localStorage.setItem('lich_nha_theme_v1', isDark ? 'dark' : 'light'); } catch (_) {}
+      }
+    }
+    let savedTheme = 'light';
+    try { savedTheme = localStorage.getItem('lich_nha_theme_v1') || 'light'; } catch (_) {}
+    applyTheme(savedTheme === 'dark', false);
+    themeToggle?.addEventListener('click', () => {
+      applyTheme(!document.documentElement.classList.contains('dark-mode'));
+    });
     document.getElementById('btn-share-help')?.addEventListener('click', () => showToast('Nhập ID 4 chữ số của người bạn muốn chia sẻ lịch.'));
     document.getElementById('btn-add-event-inline')?.addEventListener('click', openEventForm);
     document.getElementById('btn-add-event-from-list')?.addEventListener('click', openEventForm);
